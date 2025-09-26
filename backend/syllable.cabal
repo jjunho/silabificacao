@@ -1,0 +1,51 @@
+cabal-version: 2.4
+name:          syllable
+version:       0.1.0.0
+synopsis:      Haskell library for syllable separation
+category:      Text
+build-type:    Simple
+extra-source-files: README.md
+
+library
+    exposed-modules:
+        Syllable.Core
+    build-depends:
+        base ^>=4.20.0.0,
+        containers,
+        servant,
+        servant-server,
+        aeson,
+        wai,
+        warp
+    hs-source-dirs: src
+    default-language: Haskell2010
+    ghc-options: -Wall
+
+executable syllable-exe
+    main-is: Main.hs
+    other-modules:
+        Syllable.API
+        Syllable.Core
+    build-depends:
+        base ^>=4.20.0.0,
+        containers,
+        syllable,
+        servant,
+        servant-server,
+        aeson,
+        wai,
+        warp
+    hs-source-dirs: app, src
+    default-language: Haskell2010
+    ghc-options: -Wall
+
+test-suite syllable-test
+    type: exitcode-stdio-1.0
+    main-is: Spec.hs
+    build-depends:
+        base ^>=4.20.0.0,
+        syllable,
+        hspec
+    hs-source-dirs: test
+    default-language: Haskell2010
+    ghc-options: -Wall

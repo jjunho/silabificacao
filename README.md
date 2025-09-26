@@ -138,7 +138,7 @@ syllable/
 
 ## Documentação
 
-- [Documentação Haddock do backend (Haskell)](backend/dist-newstyle/build/x86_64-linux/ghc-9.10.1/syllable-0.1.0.0/doc/html/syllable/index.html)
+- [Documentação Haddock do backend (Haskell)](docs/haddock/index.html)
 
 ## Contribuição
 

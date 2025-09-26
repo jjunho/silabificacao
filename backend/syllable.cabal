@@ -34,6 +34,7 @@ executable syllable-exe
         servant-server,
         aeson,
         wai,
+        wai-extra,
         warp
     hs-source-dirs: app, src
     default-language: Haskell2010

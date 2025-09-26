@@ -5,11 +5,12 @@
 
 module Syllable.API where
 
-import           Data.Aeson               (FromJSON, ToJSON)
-import           Data.Char                (isAlpha)
-import           GHC.Generics             (Generic)
+import           Data.Aeson                           (FromJSON, ToJSON)
+import           Data.Char                            (isAlpha)
+import           GHC.Generics                         (Generic)
 import           Network.Wai
-import           Network.Wai.Handler.Warp (run)
+import           Network.Wai.Handler.Warp             (run)
+import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import           Servant
 import           Syllable.Core
 
@@ -40,11 +41,13 @@ instance ToJSON SyllabifyResponse
 type API
   = "syllabify" :> ReqBody '[ JSON] SyllabifyRequest :> Post
       '[ JSON]
-      SyllabifyResponse
+      SyllabifyResponse :<|> "api" :> "syllabify" :> ReqBody
+      '[ JSON]
+      SyllabifyRequest :> Post '[ JSON] SyllabifyResponse
 
 -- | Servidor da API
 server :: Server API
-server = syllabifyHandler
+server = syllabifyHandler :<|> syllabifyHandler
 
 -- | Handler principal da API que processa a requisição de silabificação
 syllabifyHandler :: SyllabifyRequest -> Handler SyllabifyResponse
@@ -79,7 +82,7 @@ showSyllable (Syllable ps) = map phonemeChar ps
 
 -- | Aplicação WAI da API
 app :: Application
-app = serve (Proxy :: Proxy API) server
+app = logStdoutDev $ serve (Proxy :: Proxy API) server
 
 -- | Função para iniciar o servidor REST na porta 8080
 runAPI :: IO ()

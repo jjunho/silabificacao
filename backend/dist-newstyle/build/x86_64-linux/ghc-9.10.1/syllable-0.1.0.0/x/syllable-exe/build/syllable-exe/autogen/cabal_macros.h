@@ -80,6 +80,16 @@
   (major1) == 3 && (major2) <  2 || \
   (major1) == 3 && (major2) == 2 && (minor) <= 4)
 #endif /* MIN_VERSION_wai */
+/* package wai-extra-3.1.18 */
+#ifndef VERSION_wai_extra
+#define VERSION_wai_extra "3.1.18"
+#endif /* VERSION_wai_extra */
+#ifndef MIN_VERSION_wai_extra
+#define MIN_VERSION_wai_extra(major1,major2,minor) (\
+  (major1) <  3 || \
+  (major1) == 3 && (major2) <  1 || \
+  (major1) == 3 && (major2) == 1 && (minor) <= 18)
+#endif /* MIN_VERSION_wai_extra */
 /* package warp-3.4.9 */
 #ifndef VERSION_warp
 #define VERSION_warp "3.4.9"

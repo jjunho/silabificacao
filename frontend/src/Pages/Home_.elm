@@ -1,35 +1,45 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
+{-|
+
+    # Página principal do Separador de Sílabas
+
+    Interface web para interação com a API de silabificação.
+    - Formulário para entrada de texto
+    - Botão para enviar requisição à API
+    - Exibição dos resultados silábicos
+    - Notificações de erro e carregamento
+
+    @docs Model, Msg, page
+
+-}
+
 import Api
 import Api.Syllable exposing (SyllabifyWord)
 import Html exposing (Html)
-import Html.Attributes exposing (class, disabled, placeholder, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing (class)
+import Html.Events
 import Http
 import Page exposing (Page)
 import View exposing (View)
-
-
-page : Page Model Msg
-page =
-    Page.element
-        { init = init
-        , update = update
-        , subscriptions = subscriptions
-        , view = view
-        }
 
 
 
 -- INIT
 
 
+{-| Modelo da página principal.
+inputText: texto digitado pelo usuário
+syllabificationData: estado da requisição (carregando, sucesso, erro)
+-}
 type alias Model =
     { inputText : String
     , syllabificationData : Api.Data (List SyllabifyWord)
     }
 
 
+{-| Inicializa o modelo da página.
+-}
 init : ( Model, Cmd Msg )
 init =
     ( { inputText = ""
@@ -43,12 +53,19 @@ init =
 -- UPDATE
 
 
+{-| Mensagens possíveis da página principal:
+- UpdateInputText: atualiza o texto do formulário
+- SyllabifyText: dispara requisição à API
+- SyllabifyApiResponded: recebe resposta da API
+-}
 type Msg
     = UpdateInputText String
     | SyllabifyText
     | SyllabifyApiResponded (Result Http.Error (List SyllabifyWord))
 
 
+{-| Atualiza o modelo de acordo com a mensagem recebida.
+-}
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -80,6 +97,8 @@ update msg model =
 -- SUBSCRIPTIONS
 
 
+{-| Subscrições da página (nenhuma).
+-}
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Sub.none
@@ -89,6 +108,20 @@ subscriptions _ =
 -- VIEW
 
 
+{-| Função principal da página, define ciclo de vida Elm Land.
+-}
+page : Page Model Msg
+page =
+    Page.element
+        { init = init
+        , update = update
+        , subscriptions = subscriptions
+        , view = view
+        }
+
+
+{-| Renderiza a página principal, incluindo cabeçalho, formulário e resultados.
+-}
 view : Model -> View Msg
 view model =
     { title = "Separador de Sílabas"
@@ -109,6 +142,8 @@ view model =
     }
 
 
+{-| Renderiza o formulário de entrada de texto e botão de silabificação.
+-}
 viewInputForm : Model -> Html Msg
 viewInputForm model =
     Html.div [ class "box" ]
@@ -116,10 +151,10 @@ viewInputForm model =
             [ Html.label [ class "label" ] [ Html.text "Digite o texto a ser silabificado:" ]
             , Html.div [ class "control" ]
                 [ Html.textarea
-                    [ class "textarea"
-                    , placeholder "Exemplo: tecnologia aero-espacial"
-                    , value model.inputText
-                    , onInput UpdateInputText
+                    [ class "textarea is-medium"
+                    , Html.Attributes.placeholder "Exemplo: tecnologia aero-espacial"
+                    , Html.Attributes.value model.inputText
+                    , Html.Events.onInput UpdateInputText
                     ]
                     []
                 ]
@@ -128,8 +163,8 @@ viewInputForm model =
             [ Html.div [ class "control" ]
                 [ Html.button
                     [ class "button is-primary is-fullwidth"
-                    , onClick SyllabifyText
-                    , disabled (String.isEmpty (String.trim model.inputText))
+                    , Html.Attributes.disabled (String.isEmpty (String.trim model.inputText))
+                    , Html.Events.onClick SyllabifyText
                     ]
                     [ Html.text "Silabificar" ]
                 ]
@@ -137,21 +172,17 @@ viewInputForm model =
         ]
 
 
+{-| Renderiza os resultados da silabificação, incluindo estados de carregamento, sucesso e erro.
+-}
 viewResults : Api.Data (List SyllabifyWord) -> Html Msg
 viewResults syllabificationData =
     case syllabificationData of
         Api.Loading ->
-            Html.div [ class "box has-text-centered" ]
-                [ Html.div [ class "icon is-large" ]
-                    [ Html.i [ class "fas fa-spinner fa-spin fa-2x" ] []
-                    ]
-                , Html.p [ class "mt-3" ] [ Html.text "Processando..." ]
-                ]
+            Html.div [ class "notification is-info has-text-centered" ] [ Html.text "Processando..." ]
 
         Api.Success syllabifiedWords ->
             if List.isEmpty syllabifiedWords then
-                Html.div [ class "box has-text-centered" ]
-                    [ Html.text "Digite um texto e clique em \"Silabificar\" para ver os resultados." ]
+                Html.div [ class "notification is-warning has-text-centered" ] [ Html.text "Digite um texto e clique em \"Silabificar\" para ver os resultados." ]
 
             else
                 Html.div [ class "box" ]
@@ -160,35 +191,11 @@ viewResults syllabificationData =
                     ]
 
         Api.Failure httpError ->
-            let
-                errorType =
-                    case httpError of
-                        Http.BadUrl url ->
-                            "BadUrl: " ++ url
-
-                        Http.Timeout ->
-                            "Timeout"
-
-                        Http.NetworkError ->
-                            "NetworkError"
-
-                        Http.BadStatus code ->
-                            "BadStatus: " ++ String.fromInt code
-
-                        Http.BadBody msg ->
-                            "BadBody: " ++ msg
-            in
-            Html.div [ class "box has-text-centered has-background-danger-light" ]
-                [ Html.div [ class "icon is-large has-text-danger" ]
-                    [ Html.i [ class "fas fa-exclamation-triangle fa-2x" ] []
-                    ]
-                , Html.p [ class "mt-3 has-text-danger" ]
-                    [ Html.text (Api.toUserFriendlyMessage httpError) ]
-                , Html.p [ class "mt-2" ]
-                    [ Html.text ("Origem: " ++ errorType) ]
-                ]
+            Html.div [ class "notification is-danger has-text-centered" ] [ Html.text (Api.toUserFriendlyMessage httpError) ]
 
 
+{-| Renderiza uma palavra silabificada como tags Bulma.
+-}
 viewSyllabifiedWord : SyllabifyWord -> Html Msg
 viewSyllabifiedWord syllabifiedWord =
     Html.div [ class "mb-4" ]
